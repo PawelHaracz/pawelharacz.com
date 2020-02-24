@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
@@ -9,11 +11,12 @@ using ServiceBusExample.Contracts;
 
 namespace ServiceBusExample
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        static Task Main(string[] args)
         {
-            Host.CreateDefaultBuilder()
+            using var cts = new CancellationTokenSource();
+            return Host.CreateDefaultBuilder()
                 .ConfigureServices(collection =>
                     {
                         collection.AddOptions<ServiceBusOptions>().Configure<IConfiguration>((options, configuration) =>
@@ -45,7 +48,7 @@ namespace ServiceBusExample
                         $"https://{context.Configuration.GetValue<string>("keyVault:name")}.vault.azure.net/",
                         keyVaultClient,
                         new DefaultKeyVaultSecretManager());
-                });
+                }).Build().RunAsync(cts.Token);
         }
     }
 }
