@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ServiceBusSender.Contracts;
 
 namespace ServiceBusSender
 {
@@ -18,7 +19,7 @@ namespace ServiceBusSender
             using var cts = new CancellationTokenSource();
             return Host.CreateDefaultBuilder().ConfigureServices(collection =>
             {
-                collection.AddOptions<QueueOptions>().Configure<IConfiguration>((options, configuration) =>
+                collection.AddOptions<TopicOptions>().Configure<IConfiguration>((options, configuration) =>
                 {
                     var sectionName = "ServiceBus";
                     var section = configuration.GetSection(sectionName);
@@ -30,7 +31,7 @@ namespace ServiceBusSender
                     section.Bind(options);
                 });
 
-                collection.AddSingleton<QueueService>();
+                collection.AddSingleton<IMessageBroker, TopicService>();
             })
             .ConfigureAppConfiguration((context, config) =>
                 {
